@@ -13,8 +13,15 @@ REVISION HISTORY
     20150724 -- Attempted to make this more Pythonic
     20180307 -- Changed license to BSD 3-clause
 """
-import numpy as np
+'''
+Original code by Chris Slocum
 
+Modified by Abhinav Sharma for added NCAR-NCL colormap support.
+
+Reference : https://github.com/CSlocumWX/custom_colormap
+'''
+
+import numpy as np
 
 def create_colormap(colors, position=None, bit=False, reverse=False, name='custom_colormap'):
     """
@@ -64,6 +71,77 @@ def create_colormap(colors, position=None, bit=False, reverse=False, name='custo
         cdict['green'].append((pos, color[1], color[1]))
         cdict['blue'].append((pos, color[2], color[2]))
     return LinearSegmentedColormap(name, cdict, 256)
+
+
+def colormap_tuple(RGB_file,return_tuple = True, return_cmap = False, headers=0,footers=0,delimiter=None):
+    '''
+    Retrun a list of tuple with RGB values
+    Parameters
+    ----------
+    RGB_file : text file
+        RGB textfile with coloumns value as R G B.
+    return_tuple : logical, optional
+        Return a tuple with RGB values. The default is True.
+    return_cmap : logical, optional
+        Returns the cmap directly from RGB file using create_colormap under the hood. The default is False.
+    headers : int, optional
+        Number of headers to skip. The default is 0.
+    footers : TYPE, optional
+        Number of footers to skip. The default is 0.
+    delimiter : TYPE, optional
+        Delimiter in text file. The default is None.
+
+    Returns
+    -------
+    list
+        List of tuple with each RGB values in 256 segments.
+    '''
+
+    import numpy as np
+    txt_array = np.genfromtxt(RGB_file,skip_header = headers, skip_footer = footers, delimiter = delimiter)
+    if return_cmap == True:
+        cmap = create_colormap([tuple((txt_array[i,0],txt_array[i,1],txt_array[i,2])) for i in range(0,txt_array.shape[0])], bit = True)
+        return cmap
+    return [tuple((txt_array[i,0],txt_array[i,1],txt_array[i,2])) for i in range(0,txt_array.shape[0])]
+
+
+
+def NCAR_RGB_pull(cmap_name,save_loc = None):
+    '''
+    Module to download NCL NCAR colormaps RGB file.
+    Files downloaded can be made into LinearSegmented colormaps using create_colormap function.
+    
+    Parameters
+    ----------
+    cmap_name : str
+        Name of NCL-NCAR colormap to be downloaded.
+    save_loc : str, optional
+        Directory to save RGB file. If not provided, file is saved in the present working directory. The default is None.
+
+    Returns
+    -------
+        Print message for download complete information.
+    '''
+    
+    import requests
+    import shutil
+    import os
+    cmap_name = cmap_name
+    address = 'https://www.ncl.ucar.edu/Document/Graphics/ColorTables/Files/'
+    url = address+cmap_name
+    local_filename = url.split('/')[-1]
+    if save_loc == None:
+        with requests.get(url, stream=True) as r:
+            with open(local_filename, 'wb') as f:
+                shutil.copyfileobj(r.raw, f)
+        print("Download complete for : "+local_filename)
+        print("File saved in : \n"+os.getcwd())
+    else:
+        with requests.get(url, stream=True) as r:
+            with open(save_loc+local_filename, 'wb') as f:
+                shutil.copyfileobj(r.raw, f)
+        print("Download complete for : "+local_filename)
+        print("File saved in : \n"+save_loc)
 
 
 if __name__ == "__main__":
