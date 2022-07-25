@@ -73,7 +73,7 @@ def create_colormap(colors, position=None, bit=False, reverse=False, name='custo
     return LinearSegmentedColormap(name, cdict, 256)
 
 
-def colormap_tuple(RGB_file,return_tuple = True, return_cmap = False, headers=0,footers=0,delimiter=None):
+def colormap_tuple(RGB_file,return_tuple = True, return_cmap = False, headers=0,footers=0,delimiter=None,):
     '''
     Retrun a list of tuple with RGB values
     Parameters
@@ -105,7 +105,6 @@ def colormap_tuple(RGB_file,return_tuple = True, return_cmap = False, headers=0,
     return [tuple((txt_array[i,0],txt_array[i,1],txt_array[i,2])) for i in range(0,txt_array.shape[0])]
 
 
-
 def NCAR_RGB_pull(cmap_name,save_loc = None):
     '''
     Module to download NCL NCAR colormaps RGB file.
@@ -120,15 +119,15 @@ def NCAR_RGB_pull(cmap_name,save_loc = None):
 
     Returns
     -------
-        Print message for download complete information.
+    local_filename : str
+        Prints download complete information and returns the cmap name.
     '''
-    
     import requests
     import shutil
     import os
     cmap_name = cmap_name
     address = 'https://www.ncl.ucar.edu/Document/Graphics/ColorTables/Files/'
-    url = address+cmap_name
+    url = address+cmap_name+'.rgb'
     local_filename = url.split('/')[-1]
     if save_loc == None:
         with requests.get(url, stream=True) as r:
@@ -142,7 +141,6 @@ def NCAR_RGB_pull(cmap_name,save_loc = None):
                 shutil.copyfileobj(r.raw, f)
         print("Download complete for : "+local_filename)
         print("File saved in : \n"+save_loc)
-
 
 if __name__ == "__main__":
     # An example of how to use make_cmap
